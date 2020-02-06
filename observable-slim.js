@@ -162,6 +162,9 @@ var ObservableSlim = (function() {
 					// strip off the 12 characters for ".__getParent"
 					var parentPath = _getPath(target, "__getParent");
 					return parentPath.slice(0, -12);
+				// added unique id to target
+				} else if (property === "__uid" ) {
+					return target.__uid;
 				}
 
 				// for performance improvements, we assign this to a variable so we do not have to lookup the property value again
@@ -530,11 +533,12 @@ var ObservableSlim = (function() {
 				target - Object, required, plain JavaScript object that we want to observe for changes.
 				domDelay - Boolean, required, if true, then batch up changes on a 10ms delay so a series of changes can be processed in one DOM update.
 				observer - Function, optional, will be invoked when a change is made to the proxy.
+				uuuid - String, Unique ID (optional)
 
 			Returns:
 				An ES6 Proxy object.
 		*/
-		create: function(target, domDelay, observer) {
+		create: function(target, domDelay, observer, uuid) {
 
 			// test if the target is a Proxy, if it is then we need to retrieve the original object behind the Proxy.
 			// we do not allow creating proxies of proxies because -- given the recursive design of ObservableSlim -- it would lead to sharp increases in memory usage
@@ -543,6 +547,10 @@ var ObservableSlim = (function() {
 				//if it is, then we should throw an error. we do not allow creating proxies of proxies
 				// because -- given the recursive design of ObservableSlim -- it would lead to sharp increases in memory usage
 				//throw new Error("ObservableSlim.create() cannot create a Proxy for a target object that is also a Proxy.");
+			}
+
+			if ( uuid ) {
+				target.__uid = uuid;
 			}
 
 			// fire off the _create() method -- it will create a new observable and proxy and return the proxy
